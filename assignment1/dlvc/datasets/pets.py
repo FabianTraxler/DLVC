@@ -36,17 +36,20 @@ class PetsDataset(ClassificationDataset):
             #training set:
 
             fdir1 = fdir + "data_batch_1"
+            #unpickle:
             self.data1 = self.unpickle(fdir1)
+            #remove unnecesary field:
             if b'batch_label' in self.data1: del self.data1[b'batch_label']
+            #reshaping the data array to desired shape:
             self.data1[b"data"] = self.data1[b"data"].reshape((len(self.data1[b"data"]), 32, 32, 3))
-
+            #get indices of not used labels:
             idx_to_remove = np.where((np.array(self.data1[b"labels"]) != 3) & (np.array(self.data1[b"labels"]) != 5))[0]
-             
+            #remove those entries by indices from all fields:
             self.data1[b"data"]=np.delete(self.data1[b"data"], idx_to_remove, axis=0)
             self.data1[b"labels"]=np.delete(self.data1[b"labels"], idx_to_remove, axis=0)
             self.data1[b"filenames"]=np.delete(self.data1[b"filenames"], idx_to_remove, axis=0)
 
-
+            #repeat above for the rest of the pickles
             fdir2 = fdir + "data_batch_2"
             self.data2 = self.unpickle(fdir2)
             if b'batch_label' in self.data2: del self.data2[b'batch_label']
@@ -84,20 +87,12 @@ class PetsDataset(ClassificationDataset):
             
 
 
-            #creating whole dataframe:
+            #creating whole dictionary to return:
             self.data = {}
             self.data[b"data"] = np.concatenate((self.data1[b"data"],self.data2[b"data"],self.data3[b"data"],self.data4[b"data"]))
             self.data[b"labels"] = np.concatenate((self.data1[b"labels"],self.data2[b"labels"],self.data3[b"labels"],self.data4[b"labels"]))
             self.data[b"filenames"] = np.concatenate((self.data1[b"filenames"],self.data2[b"filenames"],self.data3[b"filenames"],self.data4[b"filenames"]))
             self.data[b"labels"] = np.where(self.data[b"labels"] == 3, 0, 1)
-
-            #self.data = self.data1.append(self.data2).append(self.data3).append(self.data4)
-
-            #reshaping image arrayto 32*32*3
-            #self.data[b'data'] = self.data[b'data'].apply(lambda x: np.array(x).reshape((32,32,3)).astype(np.uint8))
-
-            #changinglabels to 0 and 1
-            #self.data[b'labels'].replace({3: 0, 5: 1}, inplace=True)
 
         elif subset == 2:
             #validation set
