@@ -1,6 +1,6 @@
 
+
 from ..dataset import Sample, Subset, ClassificationDataset
-import pandas as pd
 import numpy as np
 
 class PetsDataset(ClassificationDataset):
@@ -38,58 +38,96 @@ class PetsDataset(ClassificationDataset):
             fdir1 = fdir + "data_batch_1"
             self.data1 = self.unpickle(fdir1)
             if b'batch_label' in self.data1: del self.data1[b'batch_label']
-            self.data1 = pd.DataFrame.from_dict(self.data1, orient='index').T
-            self.data1 = self.data1[self.data1[b'labels'].isin([3,5])]
+            self.data1[b"data"] = self.data1[b"data"].reshape((len(self.data1[b"data"]), 32, 32, 3))
+
+            idx_to_remove = np.where((np.array(self.data1[b"labels"]) != 3) & (np.array(self.data1[b"labels"]) != 5))[0]
+             
+            self.data1[b"data"]=np.delete(self.data1[b"data"], idx_to_remove, axis=0)
+            self.data1[b"labels"]=np.delete(self.data1[b"labels"], idx_to_remove, axis=0)
+            self.data1[b"filenames"]=np.delete(self.data1[b"filenames"], idx_to_remove, axis=0)
 
 
             fdir2 = fdir + "data_batch_2"
             self.data2 = self.unpickle(fdir2)
             if b'batch_label' in self.data2: del self.data2[b'batch_label']
-            self.data2 = pd.DataFrame.from_dict(self.data2, orient='index').T
-            self.data2 = self.data2[self.data2[b'labels'].isin([3,5])]
+            self.data2[b"data"] = self.data2[b"data"].reshape((len(self.data2[b"data"]), 32, 32, 3))
+
+            idx_to_remove = np.where((np.array(self.data2[b"labels"]) != 3) & (np.array(self.data2[b"labels"]) != 5))[0]
+             
+            self.data2[b"data"]=np.delete(self.data2[b"data"], idx_to_remove, axis=0)
+            self.data2[b"labels"]=np.delete(self.data2[b"labels"], idx_to_remove, axis=0)
+            self.data2[b"filenames"]=np.delete(self.data2[b"filenames"], idx_to_remove, axis=0)
+
 
             fdir3 = fdir + "data_batch_3"
             self.data3 = self.unpickle(fdir3)
             if b'batch_label' in self.data3: del self.data3[b'batch_label']
-            self.data3 = pd.DataFrame.from_dict(self.data3, orient='index').T
-            self.data3 = self.data3[self.data3[b'labels'].isin([3,5])]
+            self.data3[b"data"] = self.data3[b"data"].reshape((len(self.data3[b"data"]), 32, 32, 3))
+
+            idx_to_remove = np.where((np.array(self.data3[b"labels"]) != 3) & (np.array(self.data3[b"labels"]) != 5))[0]
+             
+            self.data3[b"data"]=np.delete(self.data3[b"data"], idx_to_remove, axis=0)
+            self.data3[b"labels"]=np.delete(self.data3[b"labels"], idx_to_remove, axis=0)
+            self.data3[b"filenames"]=np.delete(self.data3[b"filenames"], idx_to_remove, axis=0)
+
 
             fdir4 = fdir + "data_batch_4"
             self.data4 = self.unpickle(fdir4)
             if b'batch_label' in self.data4: del self.data4[b'batch_label']                        
-            self.data4 = pd.DataFrame.from_dict(self.data4, orient='index').T
-            self.data4 = self.data4[self.data4[b'labels'].isin([3,5])]
+            self.data4[b"data"] = self.data4[b"data"].reshape((len(self.data4[b"data"]), 32, 32, 3))
+
+            idx_to_remove = np.where((np.array(self.data4[b"labels"]) != 3) & (np.array(self.data4[b"labels"]) != 5))[0]
+             
+            self.data4[b"data"]=np.delete(self.data4[b"data"], idx_to_remove, axis=0)
+            self.data4[b"labels"]=np.delete(self.data4[b"labels"], idx_to_remove, axis=0)
+            self.data4[b"filenames"]=np.delete(self.data4[b"filenames"], idx_to_remove, axis=0)
+            
+
 
             #creating whole dataframe:
-            self.data = self.data1.append(self.data2).append(self.data3).append(self.data4)
+            self.data = {}
+            self.data[b"data"] = np.concatenate((self.data1[b"data"],self.data2[b"data"],self.data3[b"data"],self.data4[b"data"]))
+            self.data[b"labels"] = np.concatenate((self.data1[b"labels"],self.data2[b"labels"],self.data3[b"labels"],self.data4[b"labels"]))
+            self.data[b"filenames"] = np.concatenate((self.data1[b"filenames"],self.data2[b"filenames"],self.data3[b"filenames"],self.data4[b"filenames"]))
+            self.data[b"labels"] = np.where(self.data[b"labels"] == 3, 0, 1)
+
+            #self.data = self.data1.append(self.data2).append(self.data3).append(self.data4)
 
             #reshaping image arrayto 32*32*3
-            self.data[b'data'] = self.data[b'data'].apply(lambda x: np.array(x).reshape((32,32,3)).astype(np.uint8))
+            #self.data[b'data'] = self.data[b'data'].apply(lambda x: np.array(x).reshape((32,32,3)).astype(np.uint8))
 
             #changinglabels to 0 and 1
-            self.data[b'labels'].replace({3: 0, 5: 1}, inplace=True)
+            #self.data[b'labels'].replace({3: 0, 5: 1}, inplace=True)
 
         elif subset == 2:
             #validation set
             fdir5 = fdir + "data_batch_5"
-            self.data5 = self.unpickle(fdir5)
-            if b'batch_label' in self.data5: del self.data5[b'batch_label']                        
-            self.data = pd.DataFrame.from_dict(self.data5, orient='index').T
+            self.data = self.unpickle(fdir5)
+            if b'batch_label' in self.data: del self.data[b'batch_label']                        
+            self.data[b"data"] = self.data[b"data"].reshape((len(self.data[b"data"]), 32, 32, 3))
 
-            self.data = self.data[self.data[b'labels'].isin([3,5])]
-            self.data[b'data'] = self.data[b'data'].apply(lambda x: np.array(x).reshape((32,32,3)).astype(np.uint8))
-            self.data[b'labels'].replace({3: 0, 5: 1}, inplace=True)
+            idx_to_remove = np.where((np.array(self.data[b"labels"]) != 3) & (np.array(self.data[b"labels"]) != 5))[0]
+             
+            self.data[b"data"]=np.delete(self.data[b"data"], idx_to_remove, axis=0)
+            self.data[b"labels"]=np.delete(self.data[b"labels"], idx_to_remove, axis=0)
+            self.data[b"filenames"]=np.delete(self.data[b"filenames"], idx_to_remove, axis=0)
+            self.data[b"labels"] = np.where(self.data[b"labels"] == 3, 0, 1)
+
 
         elif subset == 3:
             #test set
             fdir_test = fdir + "test_batch"
-            self.data_test = self.unpickle(fdir_test)
-            if b'batch_label' in self.data_test: del self.data_test[b'batch_label']                        
-            self.data = pd.DataFrame.from_dict(self.data_test, orient='index').T
+            self.data = self.unpickle(fdir_test)
+            if b'batch_label' in self.data: del self.data[b'batch_label']                        
+            self.data[b"data"] = self.data[b"data"].reshape((len(self.data[b"data"]), 32, 32, 3))
 
-            self.data = self.data[self.data[b'labels'].isin([3,5])]
-            self.data[b'data'] = self.data[b'data'].apply(lambda x: np.array(x).reshape((32,32,3)).astype(np.uint8))
-            self.data[b'labels'].replace({3: 0, 5: 1}, inplace=True)
+            idx_to_remove = np.where((np.array(self.data[b"labels"]) != 3) & (np.array(self.data[b"labels"]) != 5))[0]
+             
+            self.data[b"data"]=np.delete(self.data[b"data"], idx_to_remove, axis=0)
+            self.data[b"labels"]=np.delete(self.data[b"labels"], idx_to_remove, axis=0)
+            self.data[b"filenames"]=np.delete(self.data[b"filenames"], idx_to_remove, axis=0)
+            self.data[b"labels"] = np.where(self.data[b"labels"] == 3, 0, 1)
+
         pass
 
     def __len__(self) -> int:
@@ -99,7 +137,7 @@ class PetsDataset(ClassificationDataset):
 
         # TODO implement
 
-        return(self.data.size)
+        return(len(self.data[b"labels"]))
         
 
     def __getitem__(self, idx: int) -> Sample:
@@ -110,10 +148,10 @@ class PetsDataset(ClassificationDataset):
 
         # TODO implement
         try:
-            return(self.data.iloc[idx])
+            return([self.data[b"labels"][idx], self.data[b"data"][idx], self.data[b"filenames"][idx]])
         except IndexError as e:
             print("bad index")
-            raise e
+            print(e)
         
 
     def num_classes(self) -> int:
@@ -122,14 +160,55 @@ class PetsDataset(ClassificationDataset):
         '''
 
         # TODO implement
-
-        return(self.data[b'labels'].nunique())
+        u, indices = np.unique(self.data[b"labels"], return_inverse=True)
+        return(len(u))
         
+"""
+obj = PetsDataset("path/to/cifar-10-batches-py/", 1)
 
-obj = PetsDataset("cifar-10-batches-py/", 1)
 
 import cv2 
 
 cv2.imshow("example",obj.data[b'data'].values[1])
 cv2.waitKey(0) # waits until a key is pressed
 cv2.destroyAllWindows() # destroys the window showing image
+
+
+
+
+
+obj = PetsDataset("path/cifar-10-batches-py/",1)
+
+data = obj.data
+
+print((data[b"labels"]))
+
+print((data[b"data"][0].shape))
+
+print(len(data[b"filenames"]))
+
+
+
+#used for debugging:
+
+
+def unpickle( file):
+    import pickle
+    with open(file, 'rb') as fo:
+        dict = pickle.load(fo, encoding='bytes')
+    return dict
+
+
+data = unpickle("path/cifar-10-batches-py/data_batch_1")
+
+if b'batch_label' in data: del data[b'batch_label'] 
+
+self.data1[b"data"] = self.data1[b"data"].reshape((len(self.data1[b"data"]), 32, 32, 3))
+
+idx_to_remove = np.where((np.array(self.data1[b"labels"]) != 3) & (np.array(self.data1[b"labels"]) != 5))[0]
+ 
+self.data1[b"data"]=np.delete(self.data1[b"data"], idx_to_remove, axis=0)
+self.data1[b"labels"]=np.delete(self.data1[b"labels"], idx_to_remove, axis=0)
+self.data1[b"filenames"]=np.delete(self.data1[b"filenames"], idx_to_remove, axis=0)
+self.data1[b"labels"] = np.where(self.data1[b"labels"] == 3, 0, 1)
+"""
