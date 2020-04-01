@@ -148,10 +148,11 @@ class PetsDataset(ClassificationDataset):
 
         # TODO implement
         try:
-            return([self.data[b"labels"][idx], self.data[b"data"][idx], self.data[b"filenames"][idx]])
+            return(Sample(idx, self.data[b"data"][idx], self.data[b"labels"][idx]))
         except IndexError as e:
             print("bad index")
             print(e)
+            raise IndexError
         
 
     def num_classes(self) -> int:
