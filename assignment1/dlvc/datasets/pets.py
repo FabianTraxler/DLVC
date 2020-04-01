@@ -24,8 +24,8 @@ class PetsDataset(ClassificationDataset):
         '''
         
         # initialize the dataset variables
-        self.data = np.array([], dtype=np.int64).reshape(0, 32, 32, 3)
-        self.labels = np.array([], dtype=np.int64)
+        self.data = np.array([], dtype=np.uint8).reshape(0, 32, 32, 3)
+        self.labels = np.array([], dtype=np.uint8)
         self.filenames = list()
 
         # load the specified dataset
