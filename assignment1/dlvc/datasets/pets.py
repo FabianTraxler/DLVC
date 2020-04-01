@@ -22,30 +22,41 @@ class PetsDataset(ClassificationDataset):
         Images are loaded in the order the appear in the data files
         and returned as uint8 numpy arrays with shape 32*32*3, in BGR channel order.
         '''
+        
+        # initialize the dataset variables
+        self.data = np.array([], dtype=np.int64).reshape(0, 32, 32, 3)
+        self.labels = np.array([], dtype=np.int64)
+        self.filenames = list()
 
+        # load the specified dataset
         if subset == 1:
             # training set
 
-            # initialize the data variable with the first file
-            self.data = self.__load_file__(fdir + "data_batch_1")
-
-            # add all other files to the data
-            for i in range(2,5):
+            # loop over the first 4 files and create a concentated dataset
+            for i in range(1,5):
                 filename = fdir + "data_batch_" + str(i)
                 new_data = self.__load_file__(filename)
-                self.data["data"] = np.concatenate((self.data["data"],new_data["data"]))
-                self.data["labels"] = np.concatenate((self.data["labels"],new_data["labels"]))
-                self.data["filenames"] = np.concatenate((self.data["filenames"],new_data["filenames"]))
+
+                self.data = np.append(self.data, new_data["data"], axis=0)
+                self.labels = np.append(self.labels ,new_data["labels"], axis=0)
+                self.filenames.append(new_data["filenames"])
 
         elif subset == 2:
             #validation set
             filename = fdir + "data_batch_5"
-            self.data = self.__load_file__(filename)
+            new_file = self.__load_file__(filename)
+            self.data = new_file['data']
+            self.labels = new_file['labels']
+            self.filenames = new_file['filenames']
 
         elif subset == 3:
             #test set
             filename = fdir + "test_batch"
-            self.data = self.__load_file__(filename)
+            new_file = self.__load_file__(filename)
+            self.data = new_file['data']
+            self.labels = new_file['labels']
+            self.filenames = new_file['filenames']
+
  
     def __unpickle__(self, filename):
         import pickle
@@ -85,7 +96,7 @@ class PetsDataset(ClassificationDataset):
         Returns the number of samples in the dataset.
         '''
 
-        return(len(self.data["labels"]))
+        return(len(self.labels))
         
     def __getitem__(self, idx: int) -> Sample:
         '''
@@ -94,7 +105,7 @@ class PetsDataset(ClassificationDataset):
         '''
 
         try:
-            return(Sample(idx, self.data["data"][idx], self.data["labels"][idx]))
+            return(Sample(idx, self.data[idx], self.labels[idx]))
         except Exception as e:
             print(e)
             raise IndexError
@@ -104,27 +115,6 @@ class PetsDataset(ClassificationDataset):
         Returns the number of classes.
         '''
 
-        u, _ = np.unique(self.data["labels"], return_inverse=True)
+        u, _ = np.unique(self.labels, return_inverse=True)
         return(len(u))
         
-
-
-if __name__ == '__main__':
-    import sys
-    import cv2
-
-    if sys.argv[1] == 'test':
-        pets_train = PetsDataset("cifar-10-batches-py/", 1)
-
-        print('Number of Classes = {}'.format(pets_train.num_classes()))
-        print('Number of Images = {}'.format(pets_train.__len__()))
-        print('First 10 Classes >>> {}'.format(pets_train.data['labels'][:10]))
-
-        image_index = 1
-        item = pets_train.__getitem__(image_index)
-
-        print('Shape of image: {}'.format(item.data.shape))
-
-        cv2.imshow(str(item.label), item.data)
-        cv2.waitKey(0) # waits until a key is pressed
-        cv2.destroyAllWindows() # destroys the window showing image
