@@ -67,6 +67,15 @@ for lr in lr_options:
 for model in models:
     if model.accuracy.__gt__(best_model.accuracy):
         best_model = model
+    
+test_accuracy = Accuracy()
+for batch in test_batches:
+    prediction = best_model.model.predict(batch.data)
+    test_accuracy.update(prediction, batch.label)
+
+print('Best Model:')
+print('Parameters: lr={}, momentum={}'.format(best_model.model.lr, best_model.model.momentum))
+print('Test Accuracy = {}'.format(test_accuracy.accuracy()))
 
     
 
