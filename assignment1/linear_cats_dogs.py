@@ -1,6 +1,6 @@
 from collections import namedtuple
 import numpy as np
-import matplotlib.pyplot as plt
+import pandas as pd
 
 from dlvc.models.linear import LinearClassifier
 from dlvc.batches import BatchGenerator
