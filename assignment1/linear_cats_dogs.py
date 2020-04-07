@@ -1,5 +1,6 @@
 from collections import namedtuple
 import numpy as np
+import matplotlib.pyplot as plt
 
 from dlvc.models.linear import LinearClassifier
 from dlvc.batches import BatchGenerator
@@ -57,10 +58,12 @@ momentum_options = [0, 0.1, 0.01, 0.001, 0.0001]
 models = []
 best_model = TrainedModel(None, Accuracy())
 
+
+
 # loop over all combinations
 for lr in lr_options:
     for momentum in momentum_options:
-        print('Training with parameters: lr={}, momentum={}'.format(lr, momentum))
+        print('Training with parameters: lr={}, momentum={}'.format(lr, momentum), end='\r')
         model = train_model(lr, momentum)
         models.append(model)
 
@@ -77,6 +80,29 @@ print('Best Model:')
 print('Parameters: lr={}, momentum={}'.format(best_model.model.lr, best_model.model.momentum))
 print('Test Accuracy = {}'.format(test_accuracy.accuracy()))
 
-    
 
-# TODO implement steps 4-7
+fig = plt.figure()
+ax = fig.gca(projection='3d')
+
+# Make data.
+X = np.array()
+Y = np.array()
+Z = np.array()
+
+for model in models:
+    X = np.append(model.model.lr)
+    Y = np.append(model.model.momentum)
+    Z = np.append(model.accuracy.accuracy())
+
+# Plot the surface.
+surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
+                       linewidth=0, antialiased=False)
+
+# Customize the z axis.
+ax.set_zlim(0., 1.)
+ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+
+# Add a color bar which maps values to colors.
+fig.colorbar(surf, shrink=0.5, aspect=5)
+
+plt.savefig('accuracy_plot.png')
