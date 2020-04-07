@@ -29,7 +29,7 @@ class PetsDataset(ClassificationDataset):
         self.filenames = list()
 
         # load the specified dataset
-        if subset == 1:
+        if subset.value == 1:
             # training set
 
             # loop over the first 4 files and create a concentated dataset
@@ -41,7 +41,7 @@ class PetsDataset(ClassificationDataset):
                 self.labels = np.append(self.labels ,new_data["labels"], axis=0)
                 self.filenames.append(new_data["filenames"])
 
-        elif subset == 2:
+        elif subset.value == 2:
             #validation set
             filename = fdir + "data_batch_5"
             new_file = self.__load_file__(filename)
@@ -49,7 +49,7 @@ class PetsDataset(ClassificationDataset):
             self.labels = new_file['labels']
             self.filenames = new_file['filenames']
 
-        elif subset == 3:
+        elif subset.value == 3:
             #test set
             filename = fdir + "test_batch"
             new_file = self.__load_file__(filename)

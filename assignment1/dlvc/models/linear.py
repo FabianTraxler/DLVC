@@ -4,6 +4,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+torch.manual_seed(0)
+
 class LinearClassifier(Model):
     '''
     Linear classifier without bias.
@@ -23,8 +25,12 @@ class LinearClassifier(Model):
         self.input_dim = input_dim
         self.num_classes = num_classes
         self.lr = lr
-        self. momentum = momentum
+        self.momentum = momentum
         self.nesterov = nesterov
+
+        self.criterion = nn.CrossEntropyLoss()
+        self.weights = torch.rand((num_classes, input_dim), dtype=torch.double, requires_grad=True)
+        self.last_update = 0
 
     def input_shape(self) -> tuple:
         '''
@@ -51,12 +57,21 @@ class LinearClassifier(Model):
         Raises RuntimeError on other errors.
         '''
 
-        # TODO implement (compute loss)
+        outputs = self.__predict__(data)
 
-        # self.weights.retain_grad() # include this tensor in the computation graph
-        # loss.backward() # compute gradients with backpropagation
+        labels = torch.tensor(labels)
 
-        # TODO implement (update weights with gradient descent)
+        loss = self.criterion(outputs, labels)
+
+        self.weights.retain_grad() # include this tensor in the computation graph
+        loss.backward() # compute gradients with backpropagation
+
+        # update the weights
+        update = self.lr * self.weights.grad
+        self.weights = self.weights - self.momentum * self.last_update - update
+        self.last_update = update
+
+        return float(loss)
 
     def predict(self, data: np.ndarray) -> np.ndarray:
         '''
@@ -67,5 +82,22 @@ class LinearClassifier(Model):
         Raises ValueError on invalid argument values.
         Raises RuntimeError on other errors.
         '''
+        data = torch.tensor(data)
+        output = torch.matmul(data, self.weights.T)
+        output = nn.Softmax(-1)(output)
+        return output.detach().numpy()
+    
+    def __predict__(self, data: np.ndarray) -> torch.tensor:
+        '''
+        Predict softmax class scores from input data and return as torch tensor to retain the Gradients.
+        Data are the input data, with a shape compatible with input_shape().
+        The label array has shape (n, output_shape()) with n being the number of input samples.
+        Raises TypeError on invalid argument types.
+        Raises ValueError on invalid argument values.
+        Raises RuntimeError on other errors.
+        '''
+        data = torch.tensor(data)
+        output = torch.matmul(data, self.weights.T)
+        output = nn.Softmax(-1)(output)
 
-        # TODO implement
+        return output

@@ -50,7 +50,6 @@ class BatchGenerator:
         if shuffle:
             random.shuffle(self.indices)
 
-
     def __len__(self) -> int:
         '''
         Returns the number of batches generated per iteration.
@@ -65,9 +64,6 @@ class BatchGenerator:
 
         idx = self.indices[start:end]
 
-        data_shape = self.op(self.dataset.__getitem__(idx[0]).data).shape
-        data_shape = (0, data_shape)
-
         data = np.array([], dtype=np.int64).reshape((0,3072))
         label = np.array([], dtype=np.int64)
 
@@ -79,6 +75,7 @@ class BatchGenerator:
 
         return Batch(data, label, idx)
 
+
     def __iter__(self) -> typing.Iterable[Batch]:
         '''
         Iterate over the wrapped dataset, returning the data as batches.
@@ -87,3 +84,5 @@ class BatchGenerator:
         while self.iteration_count < self.__len__():
             yield self.__generate_next_batch__()
             self.iteration_count += 1
+        
+        self.iteration_count = 0

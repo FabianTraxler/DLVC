@@ -2,40 +2,15 @@ import numpy as np
 import cv2
 
 from dlvc.datasets.pets import PetsDataset
+from dlvc.models.linear import LinearClassifier
+
 from dlvc.batches import BatchGenerator
+from dlvc.test import Accuracy
+from dlvc.dataset import Subset
 import dlvc.ops as ops
 
-pets_train = PetsDataset("cifar-10-batches-py/", 1)
+from dlvc.linear_cats_dogs import train_model
 
-print('Number of Classes = {}'.format(pets_train.num_classes()))
-print('Number of Images = {}'.format(pets_train.__len__()))
-print('First 10 Classes >>> {}'.format(pets_train.labels[:10]))
+model = train_model(lr=0.001, momentum=0)
 
-
-
-
-op = ops.chain([
-    ops.vectorize(),
-    ops.type_cast(np.float32),
-    ops.add(-127.5),
-    ops.mul(1/127.5),
-])
-
-batches = BatchGenerator(pets_train, 500, False, op)
-
-print('Number of Batches = {}'.format(batches.__len__()))
-
-for batch in batches:
-    print('Shape of the data batch: {}'.format(batch.data.shape))
-    print('Shape of the label batch: {}'.format(batch.label.shape))
-    print('First 5 Elements of the first element: {}'.format(batch.data[0][0:5]))
-    print('Label of the first element: {}'.format(batch.label[0]))
-    break
-
-
-
-# show the first image
-item = pets_train.__getitem__(1)
-cv2.imshow('Test Image', item.data)
-cv2.waitKey(0) # waits until a key is pressed
-cv2.destroyAllWindows() # destroys the window showing image
+print(model.accuracy)

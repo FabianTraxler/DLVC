@@ -72,9 +72,8 @@ class Accuracy(PerformanceMeasure):
         Resets the internal state.
         '''
 
-        # TODO implement
-
-        pass
+        self.correct_predictions = 0
+        self.total_predictions = 0
 
     def update(self, prediction: np.ndarray, target: np.ndarray):
         '''
@@ -84,19 +83,23 @@ class Accuracy(PerformanceMeasure):
         Raises ValueError if the data shape or values are unsupported.
         '''
 
-        # TODO implement
+        def get_prediction(row):             
+            return np.argmax(row)
 
-        pass
+        prediction = np.apply_along_axis(get_prediction, 1, prediction)
+
+        correct_predictions = (prediction == target)
+        self.correct_predictions += sum(correct_predictions)
+        self.total_predictions += len(prediction)
 
     def __str__(self):
         '''
         Return a string representation of the performance.
         '''
 
-        # TODO implement
-        # return something like "accuracy: 0.395"
+        accuracy = self.accuracy()
 
-        pass
+        return "accuracy: {}".format(accuracy)
 
     def __lt__(self, other) -> bool:
         '''
@@ -104,7 +107,11 @@ class Accuracy(PerformanceMeasure):
         Raises TypeError if the types of both measures differ.
         '''
 
-        # TODO implement
+        try:
+            return self.accuracy < other.accuracy 
+        except:
+            raise TypeError
+
 
         pass
 
@@ -113,18 +120,19 @@ class Accuracy(PerformanceMeasure):
         Return true if this accuracy is better than another one.
         Raises TypeError if the types of both measures differ.
         '''
-
-        # TODO implement
-
-        pass
+        try:
+            return self.accuracy() > other.accuracy()
+        except:
+            raise TypeError
 
     def accuracy(self) -> float:
         '''
         Compute and return the accuracy as a float between 0 and 1.
         Returns 0 if no data is available (after resets).
         '''
+        if self.total_predictions != 0:
+            accuracy = self.correct_predictions / self.total_predictions
+        else:
+            accuracy = 0
 
-        # TODO implement
-        # on this basis implementing the other methods is easy (one line)
-
-        pass
+        return accuracy
