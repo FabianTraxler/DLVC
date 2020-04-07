@@ -80,29 +80,7 @@ print('Best Model:')
 print('Parameters: lr={}, momentum={}'.format(best_model.model.lr, best_model.model.momentum))
 print('Test Accuracy = {}'.format(test_accuracy.accuracy()))
 
-
-fig = plt.figure()
-ax = fig.gca(projection='3d')
-
-# Make data.
-X = np.array()
-Y = np.array()
-Z = np.array()
-
+# create a dataframe with all validation accuracies 
+result_df = pd.DataFrame(index=lr_options, columns=momentum_options)
 for model in models:
-    X = np.append(model.model.lr)
-    Y = np.append(model.model.momentum)
-    Z = np.append(model.accuracy.accuracy())
-
-# Plot the surface.
-surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
-                       linewidth=0, antialiased=False)
-
-# Customize the z axis.
-ax.set_zlim(0., 1.)
-ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
-
-# Add a color bar which maps values to colors.
-fig.colorbar(surf, shrink=0.5, aspect=5)
-
-plt.savefig('accuracy_plot.png')
+    result_df.at[model.model.lr, model.model.momentum] = model.accuracy.accuracy()
