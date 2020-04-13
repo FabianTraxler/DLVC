@@ -27,7 +27,8 @@ class LinearClassifier(Model):
         self.lr = lr
         self.momentum = momentum
         self.nesterov = nesterov
-
+        self.v = False
+        
         self.criterion = nn.CrossEntropyLoss()
         self.weights = torch.rand((num_classes, input_dim), dtype=torch.double, requires_grad=True)
         self.last_update = 0
