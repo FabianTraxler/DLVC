@@ -35,7 +35,7 @@ def train_model(lr: float, momentum: float) -> TrainedModel:
     Returns both the trained classifier and accuracy.
     '''
 
-    clf = LinearClassifier(input_dim=3072,  num_classes=train_data.num_classes(), lr=lr, momentum=momentum, nesterov=True)
+    clf = LinearClassifier(input_dim=3072,  num_classes=train_data.num_classes(), lr=lr, momentum=momentum, nesterov=False)
 
     n_epochs = 10
     for i in range(n_epochs):
@@ -54,7 +54,7 @@ def train_model(lr: float, momentum: float) -> TrainedModel:
 # grid search
 ## options
 lr_options = [0.1, 0.01, 0.001, 0.0001]
-momentum_options = [0, 0.1, 0.01, 0.001, 0.0001]
+momentum_options = [0.01]#, 0.1, 0.01, 0.001, 0.0001]
 models = []
 best_model = TrainedModel(None, Accuracy())
 
@@ -84,3 +84,5 @@ print('Test Accuracy = {}'.format(test_accuracy.accuracy()))
 result_df = pd.DataFrame(index=lr_options, columns=momentum_options)
 for model in models:
     result_df.at[model.model.lr, model.model.momentum] = model.accuracy.accuracy()
+
+print(result_df)
