@@ -35,7 +35,7 @@ def train_model(lr: float, momentum: float) -> TrainedModel:
     Returns both the trained classifier and accuracy.
     '''
 
-    clf = LinearClassifier(input_dim=3072,  num_classes=train_data.num_classes(), lr=lr, momentum=momentum, nesterov=False)
+    clf = LinearClassifier(input_dim=3072,  num_classes=train_data.num_classes(), lr=lr, momentum=momentum, nesterov=True)
 
     n_epochs = 10
     for i in range(n_epochs):

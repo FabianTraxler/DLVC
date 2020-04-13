@@ -27,7 +27,6 @@ class LinearClassifier(Model):
         self.lr = lr
         self.momentum = momentum
         self.nesterov = nesterov
-        self.v = False
         
         self.criterion = nn.CrossEntropyLoss()
         self.weights = torch.rand((num_classes, input_dim), dtype=torch.double, requires_grad=True)
@@ -67,7 +66,7 @@ class LinearClassifier(Model):
         self.weights.retain_grad() # include this tensor in the computation graph
         loss.backward() # compute gradients with backpropagation
         
-        if not self.nestrov:
+        if not self.nesterov:
             # update the weights
             update = self.lr * self.weights.grad
             self.weights = self.weights - self.momentum * self.last_update - update
@@ -75,10 +74,11 @@ class LinearClassifier(Model):
         else:
             self.eta = 1 #it can be changed or dynaimcally adjusted if wanted
             #calculate velocity:
-            if not self.v:
-                self.v = -self.eta * self.weights.grad
-            else: 
+            try:
                 self.v = self.lr * self.v - self.eta * self.weights.grad
+                
+            except: 
+                self.v = -self.eta * self.weights.grad
             
             #update weights by the learning rule
             self.weights = self.weights + self.v
