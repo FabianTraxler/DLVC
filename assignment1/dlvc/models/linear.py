@@ -65,12 +65,23 @@ class LinearClassifier(Model):
 
         self.weights.retain_grad() # include this tensor in the computation graph
         loss.backward() # compute gradients with backpropagation
-
-        # update the weights
-        update = self.lr * self.weights.grad
-        self.weights = self.weights - self.momentum * self.last_update - update
-        self.last_update = update
-
+        
+        if not self.nestrov:
+            # update the weights
+            update = self.lr * self.weights.grad
+            self.weights = self.weights - self.momentum * self.last_update - update
+            self.last_update = update
+        else:
+            self.eta = 1 #it can be changed or dynaimcally adjusted if wanted
+            #calculate velocity:
+            if not self.v:
+                self.v = -self.eta * self.weights.grad
+            else: 
+                self.v = self.lr * self.v - self.eta * self.weights.grad
+            
+            #update weights by the learning rule
+            self.weights = self.weights + self.v
+            self.update = self.v
         return float(loss)
 
     def predict(self, data: np.ndarray) -> np.ndarray:
