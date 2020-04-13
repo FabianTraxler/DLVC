@@ -53,8 +53,8 @@ def train_model(lr: float, momentum: float) -> TrainedModel:
 
 # grid search
 ## options
-lr_options = [0.1, 0.01, 0.001, 0.0001]
-momentum_options = [0.01]#, 0.1, 0.01, 0.001, 0.0001]
+lr_options = [0.1, 0.001, 0.0001]
+momentum_options = [0.01, 0.1, 0.001]
 models = []
 best_model = TrainedModel(None, Accuracy())
 
@@ -63,7 +63,8 @@ best_model = TrainedModel(None, Accuracy())
 # loop over all combinations
 for lr in lr_options:
     for momentum in momentum_options:
-        print('Training with parameters: lr={}, momentum={}'.format(lr, momentum), end='\r')
+        nesterov = True
+        print('Training with parameters: lr={}, momentum={}, nesterov={}'.format(lr, momentum, nesterov), end='\r')
         model = train_model(lr, momentum)
         models.append(model)
 
