@@ -31,7 +31,7 @@ class LinearClassifier(Model):
         self.criterion = nn.CrossEntropyLoss()
         self.weights = torch.rand((num_classes, input_dim), dtype=torch.double, requires_grad=True)
         
-        self.previos_velocity = 0  #this is our velocity term!
+        self.velocity = torch.zeros((num_classes, input_dim), dtype=torch.double)
 
     def input_shape(self) -> tuple:
         '''
@@ -60,7 +60,7 @@ class LinearClassifier(Model):
 
         if self.nesterov:
             # use weights + velocity (=approx next step) to calcuate gradients
-            self.weights = self.weights + self.previos_velocity
+            self.weights = self.weights + self.velocity
 
         outputs = self.__predict__(data)
         labels = torch.tensor(labels)
@@ -72,9 +72,9 @@ class LinearClassifier(Model):
 
         # update the gradients
         final_step = self.lr * self.weights.grad
-        velocity = self.momentum * self.previos_velocity - final_step
-        self.weights = self.weights + velocity
-        self.previos_velocity = velocity
+        new_velocity = self.momentum * self.velocity - final_step
+        self.weights = self.weights + new_velocity
+        self.velocity = new_velocity
 
         return float(loss)
 
