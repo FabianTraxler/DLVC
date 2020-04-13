@@ -38,7 +38,7 @@ validation_batches = BatchGenerator(pets_val, 100, False, op)
 
 print('Number of Batches = {}'.format(train_batches.__len__()))
 
-model  = LinearClassifier(3072, pets_train.num_classes(), lr=0.001, momentum=0, nesterov=False)
+model  = LinearClassifier(3072, pets_train.num_classes(), lr=0.001, momentum=0.1, nesterov=True)
 
 # test batch generator
 for batch in train_batches:
