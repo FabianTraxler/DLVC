@@ -30,7 +30,8 @@ class LinearClassifier(Model):
         
         self.criterion = nn.CrossEntropyLoss()
         self.weights = torch.rand((num_classes, input_dim), dtype=torch.double, requires_grad=True)
-        self.velocity = 0  #this is our velocity term!
+        
+        self.previos_velocity = 0  #this is our velocity term!
 
     def input_shape(self) -> tuple:
         '''
@@ -57,28 +58,24 @@ class LinearClassifier(Model):
         Raises RuntimeError on other errors.
         '''
 
-        outputs = self.__predict__(data)
+        if self.nesterov:
+            # use weights + velocity (=approx next step) to calcuate gradients
+            self.weights = self.weights + self.previos_velocity
 
+        outputs = self.__predict__(data)
         labels = torch.tensor(labels)
 
         loss = self.criterion(outputs, labels)
 
         self.weights.retain_grad() # include this tensor in the computation graph
         loss.backward() # compute gradients with backpropagation
-        
-        if not self.nesterov:
-            # update the weights
-            update = self.lr * self.weights.grad
-            self.weights = self.weights - self.momentum * self.velocity - update
-            self.velocity = update
-        else:
-            self.eta = 1 #it can be changed or dynaimcally adjusted if wanted
-            #calculate velocity:
-            self.velocity = self.lr * self.velocity - self.eta * self.weights.grad          
-            
-            #update weights by the learning rule
-            self.weights = self.weights + self.velocity
-            self.update = self.velocity
+
+        # update the gradients
+        final_step = self.lr * self.weights.grad
+        velocity = self.momentum * self.previos_velocity - final_step
+        self.weights = self.weights + velocity
+        self.previos_velocity = velocity
+
         return float(loss)
 
     def predict(self, data: np.ndarray) -> np.ndarray:
