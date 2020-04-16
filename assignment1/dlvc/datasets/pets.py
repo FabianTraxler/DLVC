@@ -59,12 +59,18 @@ class PetsDataset(ClassificationDataset):
 
  
     def __unpickle__(self, filename):
+        """
+        Read a pickled Version of the Dataset and return the resulting dict
+        """
         import pickle
         with open(filename, 'rb') as fo:
             data_dict = pickle.load(fo, encoding='bytes')
         return data_dict
 
     def __load_file__(self,filename):
+        """
+        Load a file from filepath and return labesl, data, and filenames
+        """
         data_dict = self.__unpickle__(filename)
 
         # reshape the images
@@ -104,11 +110,10 @@ class PetsDataset(ClassificationDataset):
         Raises IndexError if the index is out of bounds.
         '''
 
-        try:
-            return(Sample(idx, self.data[idx], self.labels[idx]))
-        except Exception as e:
-            print(e)
+        if idx >= self.__len__():
             raise IndexError
+        else:
+            return(Sample(idx, self.data[idx], self.labels[idx]))
         
     def num_classes(self) -> int:
         '''

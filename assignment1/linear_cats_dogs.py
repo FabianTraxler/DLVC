@@ -2,6 +2,8 @@ from collections import namedtuple
 import numpy as np
 import pandas as pd
 
+import time
+
 from dlvc.models.linear import LinearClassifier
 from dlvc.batches import BatchGenerator
 from dlvc.test import Accuracy
@@ -92,8 +94,15 @@ def grid_search(lr_options, momentum_options, nesterov):
     return (best_model, result_df)
 
 
-lr_options = [0.1, 0.01, 0.001]
-momentum_options = [0.1, 0.01, 0.001]
+lr_options = [0.5, 0.2, 0.1, 0.01, 0.001]
+momentum_options = [0.9, 0.5, 0.1, 0.01, 0.001]
+
+start_time = time.time()
+
 best_model, result_df = grid_search(lr_options=lr_options, momentum_options=momentum_options, nesterov=True)
+
+end_time = time.time()
+
+print('Wall time: {}s'.format(round(end_time - start_time, 2)))
 
 print(result_df)

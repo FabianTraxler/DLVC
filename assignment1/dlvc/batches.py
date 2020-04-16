@@ -58,22 +58,19 @@ class BatchGenerator:
         return math.ceil(len(self.dataset.labels) / self.batch_size)
 
     def __generate_next_batch__(self):
-
         start = self.iteration_count * self.batch_size
         end = start + self.batch_size
 
         idx = self.indices[start:end]
 
-        data = np.array([], dtype=np.int64).reshape((0,3072))
-        label = np.array([], dtype=np.int64)
-
+        data=[]
+        label=[]
         for i in idx:
             item = self.dataset.__getitem__(i)
-            new_data = np.expand_dims(self.op(item.data), axis=0)
-            data = np.append(data, new_data, axis=0)
-            label = np.append(label, item.label)
-
-        return Batch(data, label, idx)
+            transformed_data=self.op(item.data)
+            data.append(transformed_data)
+            label.append(item.label)
+        return Batch(np.array(data),np.array(label),idx)
 
 
     def __iter__(self) -> typing.Iterable[Batch]:
