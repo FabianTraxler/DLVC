@@ -64,7 +64,7 @@ class LinearClassifier(Model):
             self.weights = self.weights + self.velocity
 
         outputs = self.__predict__(data)
-        labels = torch.tensor(labels)
+        labels = torch.tensor(labels).type(torch.LongTensor)
 
         loss = self.criterion(outputs, labels)
 

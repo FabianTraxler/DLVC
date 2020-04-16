@@ -62,8 +62,6 @@ def grid_search(lr_options, momentum_options, nesterov):
     models = []
     best_model = TrainedModel(None, Accuracy())
 
-
-
     # loop over all combinations
     for lr in lr_options:
         for momentum in momentum_options:
