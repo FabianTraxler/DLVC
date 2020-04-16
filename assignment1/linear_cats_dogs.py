@@ -62,6 +62,11 @@ def grid_search(lr_options, momentum_options, nesterov):
     models = []
     best_model = TrainedModel(None, Accuracy())
 
+    # create a dataframe with all validation accuracies 
+    result_df = pd.DataFrame(index=lr_options, columns=momentum_options)
+    result_df.index.name = 'Learning Rate'
+    result_df.columns.name = 'Momentum'
+
     # loop over all combinations
     for lr in lr_options:
         for momentum in momentum_options:
@@ -69,25 +74,10 @@ def grid_search(lr_options, momentum_options, nesterov):
             print('Training with parameters: lr={}, momentum={}, nesterov={}  '.format(lr, momentum, nesterov), end='\r')
             model = train_model(lr, momentum)
             models.append(model)
+            result_df.at[model.model.lr, model.model.momentum] = model.accuracy.accuracy()
+
             if model.accuracy.__gt__(best_model.accuracy):
                 best_model = model
-
-        
-    test_accuracy = Accuracy()
-    for batch in test_batches:
-        prediction = best_model.model.predict(batch.data)
-        test_accuracy.update(prediction, batch.label)
-
-    print('\nBest Model:')
-    print('Parameters: lr={}, momentum={}'.format(best_model.model.lr, best_model.model.momentum))
-    print('Test Accuracy = {}'.format(test_accuracy.accuracy()))
-
-    # create a dataframe with all validation accuracies 
-    result_df = pd.DataFrame(index=lr_options, columns=momentum_options)
-    result_df.index.name = 'Learning Rate'
-    result_df.columns.name = 'Momentum'
-    for model in models:
-        result_df.at[model.model.lr, model.model.momentum] = model.accuracy.accuracy()
 
     return (best_model, result_df)
 
@@ -104,3 +94,11 @@ end_time = time.time()
 print('Wall time: {}s'.format(round(end_time - start_time, 2)))
 
 print(result_df)
+
+print('\nBest Model:')
+print('Parameters: lr={}, momentum={}'.format(best_model.model.lr, best_model.model.momentum))
+test_accuracy = Accuracy()
+for batch in test_batches:
+    prediction = best_model.model.predict(batch.data)
+    test_accuracy.update(prediction, batch.label)
+print('Test Accuracy = {}'.format(test_accuracy.accuracy()))

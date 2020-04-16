@@ -76,5 +76,3 @@ print('Model Accuracy >>> {}'.format(validation_accuracy.accuracy()))
 #cv2.imshow('Test Image', item.data)
 #cv2.waitKey(0) # waits until a key is pressed
 #cv2.destroyAllWindows() # destroys the window showing image
-
-
