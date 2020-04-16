@@ -6,6 +6,7 @@ import torch.nn as nn
 
 torch.manual_seed(0)
 
+
 class LinearClassifier(Model):
     '''
     Linear classifier without bias.
@@ -27,11 +28,13 @@ class LinearClassifier(Model):
         self.lr = lr
         self.momentum = momentum
         self.nesterov = nesterov
-        
+
         self.criterion = nn.CrossEntropyLoss()
-        self.weights = torch.rand((num_classes, input_dim), dtype=torch.double, requires_grad=True)
-        
-        self.velocity = torch.zeros((num_classes, input_dim), dtype=torch.double)
+        self.weights = torch.rand(
+            (num_classes, input_dim), dtype=torch.double, requires_grad=True)
+
+        self.velocity = torch.zeros(
+            (num_classes, input_dim), dtype=torch.double)
 
     def input_shape(self) -> tuple:
         '''
@@ -58,25 +61,42 @@ class LinearClassifier(Model):
         Raises RuntimeError on other errors.
         '''
 
-        if self.nesterov:
-            # use weights + velocity (=approx next step) to calcuate gradients
-            self.weights = self.weights + self.velocity
+        # first handling exceptions:
+        if type(data) is not np.ndarray:
+            raise TypeError("the given data is not ndarray")
 
-        outputs = self.__predict__(data)
-        labels = torch.tensor(labels)
+        if type(labels) is not np.ndarray:
 
-        loss = self.criterion(outputs, labels)
+            raise TypeError("the given label is not ndarray")
 
-        self.weights.retain_grad() # include this tensor in the computation graph
-        loss.backward() # compute gradients with backpropagation
+        if data.shape[0] != labels.shape[0]:
+            raise ValueError(
+                "the length of input data and label does not match")
 
-        # update the gradients
-        final_step = self.lr * self.weights.grad
-        new_velocity = self.momentum * self.velocity - final_step
-        self.weights = self.weights + new_velocity
-        self.velocity = new_velocity
+        # Runtime error :
+        try:
+            if self.nesterov:
+                # use weights + velocity (=approx next step) to calcuate gradients
+                self.weights = self.weights + self.velocity
 
-        return float(loss)
+            outputs = self.__predict__(data)
+            labels = torch.tensor(labels)
+
+            loss = self.criterion(outputs, labels)
+
+            self.weights.retain_grad()  # include this tensor in the computation graph
+            loss.backward()  # compute gradients with backpropagation
+
+            # update the gradients
+            final_step = self.lr * self.weights.grad
+            new_velocity = self.momentum * self.velocity - final_step
+            self.weights = self.weights + new_velocity
+            self.velocity = new_velocity
+
+            return float(loss)
+
+        except:
+            raise RuntimeError("Something went wrong in training")
 
     def predict(self, data: np.ndarray) -> np.ndarray:
         '''
@@ -87,11 +107,20 @@ class LinearClassifier(Model):
         Raises ValueError on invalid argument values.
         Raises RuntimeError on other errors.
         '''
-        data = torch.tensor(data)
-        output = torch.matmul(data, self.weights.T)
-        output = nn.Softmax(-1)(output)
-        return output.detach().numpy()
-    
+
+        # error handling
+
+        if type(data) != np.ndarray:
+            raise TypeError("the given data is not ndarray")
+
+        try:
+            data = torch.tensor(data)
+            output = torch.matmul(data, self.weights.T)
+            output = nn.Softmax(-1)(output)
+            return output.detach().numpy()
+        except:
+            raise RuntimeError("Something went wrong in predict")
+
     def __predict__(self, data: np.ndarray) -> torch.tensor:
         '''
         Predict softmax class scores from input data and return as torch tensor to retain the Gradients.
@@ -101,6 +130,7 @@ class LinearClassifier(Model):
         Raises ValueError on invalid argument values.
         Raises RuntimeError on other errors.
         '''
+
         data = torch.tensor(data)
         output = torch.matmul(data, self.weights.T)
         output = nn.Softmax(-1)(output)
