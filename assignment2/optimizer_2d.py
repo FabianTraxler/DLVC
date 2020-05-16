@@ -214,7 +214,7 @@ if __name__ == '__main__':
     # fn.__call__(loc)
     # fn.grad(loc)
     optimizer = torch.optim.SGD(
-        [loc], lr=0.50, momentum=0, nesterov=False)
+        [loc], lr=100, momentum=0, nesterov=False)
 
     # Perform gradient descent using a PyTorch optimizer
     # See https://pytorch.org/docs/stable/optim.html for how to use it
@@ -223,7 +223,7 @@ if __name__ == '__main__':
         i += 1
         # Visualize each iteration by drawing on vis using e.g. cv2.line()
         # Find a suitable termination condition and break out of loop once done
-
+        optimizer.zero_grad()
         start_point = (loc.data[0], loc.data[1])
 
         value = AutogradFn.apply(fn, loc)
