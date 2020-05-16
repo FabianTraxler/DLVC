@@ -214,7 +214,7 @@ if __name__ == '__main__':
     # fn.__call__(loc)
     # fn.grad(loc)
     optimizer = torch.optim.SGD(
-        [loc], lr=100, momentum=0, nesterov=False)
+        [loc], lr=300, momentum=0, nesterov=False)
 
     # Perform gradient descent using a PyTorch optimizer
     # See https://pytorch.org/docs/stable/optim.html for how to use it
