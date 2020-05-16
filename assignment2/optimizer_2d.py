@@ -8,6 +8,7 @@ import numpy as np
 
 Vec2 = namedtuple('Vec2', ['x1', 'x2'])
 
+
 class AutogradFn(torch.autograd.Function):
     '''
     This class wraps a Fn instance to make it compatible with PyTorch optimimzers
@@ -26,6 +27,7 @@ class AutogradFn(torch.autograd.Function):
         grad = fn.grad(Vec2(loc[0].item(), loc[1].item()))
         return None, torch.tensor([grad.x1, grad.x2]) * grad_output
 
+
 class Fn:
     '''
     A 2D function evaluated on a grid.
@@ -42,10 +44,10 @@ class Fn:
 
         self.fn = cv2.imread(fpath, cv2.IMREAD_UNCHANGED)
         self.fn = self.fn.astype(np.float32)
-        self.fn /= (2**16-1)
+        self.fn /= (2**16 - 1)
         self.eps = eps
 
-    def visualize(self) -> np.ndarray:
+    def visualize(self, scale=True) -> np.ndarray:
         '''
         Return a visualization as a color image. Use e.g. cv2.applyColorMap.
         Use the result to visualize the progress of gradient descent.
@@ -53,7 +55,20 @@ class Fn:
 
         # TODO implement
 
-        pass
+        # for the colour map to be sued the image pixels must be in range of 0-255,
+        # so simple scaling as follows should suffice, if the original image is between 0 and 1:
+
+        if scale:
+            image = np.uint8((self.fn + 1) * 255 / 2)
+        else:
+            image = self.fn
+
+        coloured = cv2.applyColorMap(image, cv2.COLORMAP_JET)
+
+        #cv2.imshow("colour window", coloured)
+        #k = cv2.waitKey(5000)
+
+        return coloured
 
     def __call__(self, loc: Vec2) -> float:
         '''
@@ -65,7 +80,43 @@ class Fn:
         # You can simply round and map to integers. If so, make sure not to set eps and learning_rate too low
         # For bonus points you can implement some form of interpolation (linear should be sufficient)
 
-        pass
+        fn = self.fn.data.tolist()  # make a copy as a list for easier use
+
+        # get the coordinates
+        x = loc.x1
+        y = loc.x2
+
+        # here we check if the location is valid.
+        # this will also raise valueError if we are on  the bottom or right border of fn
+        if x < 0 or y < 0 or y > np.array(self.fn.data.tolist()).shape[1] - 1 or x > np.array(self.fn.data.tolist()).shape[0] - 1:
+            raise ValueError
+
+        # next we get the 4 bounding grid coordinates:
+        x1 = int(np.floor(x))
+        y1 = int(np.floor(y))
+        x2 = int(x1 + 1)
+        y2 = int(y1 + 1)
+
+        # now we get the fn-values at the 4 grid points of fn:
+
+        q11 = fn[x1][y1]
+        q12 = fn[x1][y2]
+        q21 = fn[x2][y1]
+        q22 = fn[x2][y2]
+
+        # and finnaly we can get the interpolation with matrix vector multiplication:
+        x_vec = [x2 - x, x - x1]
+        y_vec = [y2 - y, y - y1]
+        fn_matrix = [[q11, q12], [q21, q22]]
+
+        interpolation = 1 / ((x2 - x1) * (y2 - y1)) * \
+            np.linalg.multi_dot([x_vec, fn_matrix, y_vec])
+
+        # uncomment to see the interpolation result and the neighbouring values:
+        #print("here is the interpolation: ", interpolation)
+        #print("while the surrounding gridpoints are : \n", q11, q12, q21, q22)
+
+        return interpolation
 
     def grad(self, loc: Vec2) -> Vec2:
         '''
@@ -75,36 +126,118 @@ class Fn:
 
         # TODO implement one of the two versions presented in the lecture
 
-        pass
+        # here we will calculate the gradients, for that we will add eps to x and y
+        # calculate the gradients per dimesnions and return them as a vector / tensor
+
+        x = loc.x1
+        y = loc.x2
+
+        if x < 0 or y < 0 or y > np.array(self.fn.data.tolist()).shape[1] - 1 or x > np.array(self.fn.data.tolist()).shape[0] - 1 or self.eps <= 0:
+            raise ValueError
+
+        x_eps = x + self.eps
+        y_eps = y + self.eps
+
+        f_loc = self.__call__(loc=loc)  # get the interpolation for fn in loc
+
+        # first for x coordinate of gradients:
+        # location shifted with eps in x
+        loc_x = Vec2(x_eps, y)
+
+        # get the interpolation value int he shifted location
+        f_loc_x = self.__call__(loc=loc_x)
+        # get x coordinate of the gradient
+        grad_x = (f_loc_x - f_loc) / self.eps
+
+        # for y coordinate of gradients:
+        # location shifted with eps in y
+        loc_y = Vec2(x, y_eps)
+        # get the interpolation value int he shifted location
+        f_loc_y = self.__call__(loc=loc_y)
+        # get y coordinate of the gradient
+        grad_y = (f_loc_y - f_loc) / self.eps
+
+        print("gradients for x and y: ")
+        print(grad_x, grad_y)
+        print()
+        grad = Vec2(-f_loc_x, -f_loc_y)
+
+        return grad
+
 
 if __name__ == '__main__':
+
+    # remove this comment block to enable the argument parser
+    """
+
     # Parse args
     import argparse
 
-    parser = argparse.ArgumentParser(description='Perform gradient descent on a 2D function.')
-    parser.add_argument('fpath', help='Path to a PNG file encoding the function')
-    parser.add_argument('sx1', type=float, help='Initial value of the first argument')
-    parser.add_argument('sx2', type=float, help='Initial value of the second argument')
-    parser.add_argument('--eps', type=float, default=1.0, help='Epsilon for computing numeric gradients')
-    parser.add_argument('--learning_rate', type=float, default=10.0, help='Learning rate')
-    parser.add_argument('--beta', type=float, default=0, help='Beta parameter of momentum (0 = no momentum)')
-    parser.add_argument('--nesterov', action='store_true', help='Use Nesterov momentum')
+    parser = argparse.ArgumentParser(
+        description='Perform gradient descent on a 2D function.')
+    parser.add_argument(
+        'fpath', help='Path to a PNG file encoding the function', default="fn/beale.png")
+    parser.add_argument('sx1', type=float, default=1.0,
+                        help='Initial value of the first argument')
+    parser.add_argument('sx2', type=float, default=1.0,
+                        help='Initial value of the second argument')
+    parser.add_argument('--eps', type=float, default=1.0,
+                        help='Epsilon for computing numeric gradients')
+    parser.add_argument('--learning_rate', type=float,
+                        default=10.0, help='Learning rate')
+    parser.add_argument('--beta', type=float, default=0,
+                        help='Beta parameter of momentum (0 = no momentum)')
+    parser.add_argument('--nesterov', action='store_true',
+                        help='Use Nesterov momentum')
+
+
+
+
     args = parser.parse_args()
 
     # Init
     fn = Fn(args.fpath, args.eps)
+
     vis = fn.visualize()
     loc = torch.tensor([args.sx1, args.sx2], requires_grad=True)
 
-    optimizer = torch.optim.SGD([loc], lr=args.learning_rate, momentum=args.beta, nesterov=args.nesterov)
+    """
+
+# Init
+    sx1 = 55.5
+    sx2 = 55.5
+    fn = Fn("fn/beale.png", 1)
+
+    vis = fn.visualize()
+    loc = torch.tensor([sx1, sx2], requires_grad=True)
+
+    # fn.__call__(loc)
+    # fn.grad(loc)
+    optimizer = torch.optim.SGD(
+        [loc], lr=0.50, momentum=0, nesterov=False)
 
     # Perform gradient descent using a PyTorch optimizer
     # See https://pytorch.org/docs/stable/optim.html for how to use it
+    i = 0
     while True:
+        i += 1
         # Visualize each iteration by drawing on vis using e.g. cv2.line()
         # Find a suitable termination condition and break out of loop once done
 
-        # value = AutogradFn.apply(fn, loc)
+        start_point = (loc.data[0], loc.data[1])
 
-        cv2.imshow('Progress', vis)
+        value = AutogradFn.apply(fn, loc)
+        value.backward()
+        optimizer.step()
+
+        end_point = (loc.data[0], loc.data[1])
+        color = (255, 0, 0)
+        thickness = 3
+
+        if i == 100:
+            break
+
+        image = fn.visualize()
+        image = cv2.line(image, start_point, end_point, color, thickness)
+        cv2.imshow('Progress', image)
         cv2.waitKey(50)  # 20 fps, tune according to your liking
