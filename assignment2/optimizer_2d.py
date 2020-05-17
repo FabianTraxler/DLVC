@@ -161,6 +161,7 @@ class Fn:
         print("gradients for x and y: ")
         print(grad_x, grad_y)
         print()
+
         grad = Vec2(10 * grad_y, 10 * grad_x)
 
         return grad
