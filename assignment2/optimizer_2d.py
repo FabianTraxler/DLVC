@@ -25,6 +25,7 @@ class AutogradFn(torch.autograd.Function):
         fn = ctx.fn
         loc, = ctx.saved_tensors
         grad = fn.grad(Vec2(loc[0].item(), loc[1].item()))
+        print("grad out is : ", grad_output)
         return None, torch.tensor([grad.x1, grad.x2]) * grad_output
 
 
@@ -160,7 +161,7 @@ class Fn:
         print("gradients for x and y: ")
         print(grad_x, grad_y)
         print()
-        grad = Vec2(-f_loc_x, -f_loc_y)
+        grad = Vec2(10 * grad_y, 10 * grad_x)
 
         return grad
 
@@ -204,9 +205,10 @@ if __name__ == '__main__':
     """
 
 # Init
-    sx1 = 55.5
-    sx2 = 55.5
-    fn = Fn("fn/beale.png", 1)
+    sx1 = 50.5
+    sx2 = 50.5
+    lr = 3000
+    fn = Fn("fn/madsen.png", 1)
 
     vis = fn.visualize()
     loc = torch.tensor([sx1, sx2], requires_grad=True)
@@ -214,7 +216,7 @@ if __name__ == '__main__':
     # fn.__call__(loc)
     # fn.grad(loc)
     optimizer = torch.optim.SGD(
-        [loc], lr=300, momentum=0, nesterov=False)
+        [loc], lr=lr, momentum=0, nesterov=False)
 
     # Perform gradient descent using a PyTorch optimizer
     # See https://pytorch.org/docs/stable/optim.html for how to use it
@@ -227,17 +229,54 @@ if __name__ == '__main__':
         start_point = (loc.data[0], loc.data[1])
 
         value = AutogradFn.apply(fn, loc)
+
+        # this block could be helpful if we want to calculate the loss manually
+        # by manually taking the steps based on our gradiant values and comparing
+        # it to the loc values updated by the optimizer
+        # calcualte the expected output:
+        grad = fn.grad(Vec2(loc.data[0], loc.data[1]))
+        grad_x = grad.x2
+        grad_y = grad.x1
+
+        try:
+            # for the first iteration x_calculated and y_calculated do not exist
+            x_calculated += lr * grad_x
+            y_calculated += lr * grad_y
+        except:
+            print("x and y calc not present, using loc")
+            x_calculated = loc.data[0] + lr * grad_x
+            y_calculated = loc.data[1] + lr * grad_y
+
+        # we create our target value
+        target = torch.tensor([x_calculated, y_calculated], requires_grad=True)
+
+        # define loss and calculate it:
+        loss = torch.nn.L1Loss()
+        output = loss(loc, target)
+
+        # here if we want to use the loss, simply change it to output.backward()
+        # output.backward()
         value.backward()
+
+        # some minor logs for the locations losses etc
+        print("locations and should be locs are:", loc.data, target.data)
+        print("loss is :", value.data)
+
+        # fineally we do one iteration
         optimizer.step()
 
+        # this below block is responsible for the plotting
         end_point = (loc.data[0], loc.data[1])
         color = (255, 0, 0)
         thickness = 3
-
-        if i == 100:
-            break
 
         image = fn.visualize()
         image = cv2.line(image, start_point, end_point, color, thickness)
         cv2.imshow('Progress', image)
         cv2.waitKey(50)  # 20 fps, tune according to your liking
+
+        # break conditions
+        if (i == 100 or (np.abs(grad_x) < 0.0061 and np.abs(grad_y) < 0.0061)):
+            print("we reached the iteration limit or stopping criterion")
+            time.sleep(10)
+            break
