@@ -160,7 +160,7 @@ class Fn:
         print("gradients for x and y: ")
         print(grad_x, grad_y)
         print()
-        grad = Vec2(-f_loc_x, -f_loc_y)
+        grad = Vec2(grad_y, grad_x) #here x and y grads needs to be flipped
 
         return grad
 
