@@ -222,12 +222,13 @@ if __name__ == '__main__':
     # Perform gradient descent using a PyTorch optimizer
     # See https://pytorch.org/docs/stable/optim.html for how to use it
     i = 0
+    line_points = []
     while True:
         i += 1
         # Visualize each iteration by drawing on vis using e.g. cv2.line()
         # Find a suitable termination condition and break out of loop once done
         optimizer.zero_grad()
-        start_point = (loc.data[0], loc.data[1])
+        start_point = (int(loc[0].item()), int(loc[1].item()))
 
         value = AutogradFn.apply(fn, loc)
 
@@ -267,12 +268,17 @@ if __name__ == '__main__':
         optimizer.step()
 
         # this below block is responsible for the plotting
-        end_point = (loc.data[0], loc.data[1])
+        end_point = (int(loc[0].item()), int(loc[1].item()))
+        line_points.append([start_point, end_point])
+
         color = (255, 0, 0)
         thickness = 3
 
+        print("start and endpoints are:", start_point, end_point)
+
         image = fn.visualize()
-        image = cv2.line(image, start_point, end_point, color, thickness)
+        for lines in line_points:
+            image = cv2.line(image, lines[0], lines[1], color, thickness)
         cv2.imshow('Progress', image)
         cv2.waitKey(50)  # 20 fps, tune according to your liking
 
