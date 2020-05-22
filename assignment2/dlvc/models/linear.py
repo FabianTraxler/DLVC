@@ -64,7 +64,7 @@ class LinearClassifier(Model):
             self.weights = self.weights + self.velocity
 
         outputs = self.__predict__(data)
-        labels = torch.tensor(labels).type(torch.LongTensor)
+        labels = torch.from_numpy(labels).type(torch.LongTensor)
 
         loss = self.criterion(outputs, labels)
 
@@ -88,7 +88,7 @@ class LinearClassifier(Model):
         Raises ValueError on invalid argument values.
         Raises RuntimeError on other errors.
         '''
-        data = torch.tensor(data)
+        data = torch.from_numpy(data)
         output = torch.matmul(data, self.weights.T)
         return output.detach().numpy()
     
@@ -101,7 +101,7 @@ class LinearClassifier(Model):
         Raises ValueError on invalid argument values.
         Raises RuntimeError on other errors.
         '''
-        data = torch.tensor(data)
+        data = torch.from_numpy(data)
         output = torch.matmul(data, self.weights.T)
         output = nn.Softmax(-1)(output)
 

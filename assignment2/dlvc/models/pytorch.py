@@ -25,31 +25,30 @@ class CnnClassifier(Model):
 
         # TODO implement
 
-        # Inside the train() and predict() functions you will need to know whether the network itself
-        # runs on the CPU or on a GPU, and in the latter case transfer input/output tensors via cuda() and cpu().
-        # To termine this, check the type of (one of the) parameters, which can be obtained via parameters() (there is an is_cuda flag).
-        # You will want to initialize the optimizer and loss function here.
-        # Note that PyTorch's cross-entropy loss includes normalization so no softmax is required
+        self.net = net
 
-        pass
+        self.input_shape = input_shape
+        self.num_classes = num_classes
+
+        self.cuda = next(net.parameters()).is_cuda
+
+        self.optimizer = torch.optim.SGD(net.parameters(), lr=lr, weight_decay=wd, nesterov=True, momentum=0.9)
+        self.criterion = nn.CrossEntropyLoss()
+
 
     def input_shape(self) -> tuple:
         '''
         Returns the expected input shape as a tuple.
         '''
 
-        # TODO implement
-
-        pass
+        return self.input_shape
 
     def output_shape(self) -> tuple:
         '''
         Returns the shape of predictions for a single sample as a tuple, which is (num_classes,).
         '''
 
-        # TODO implement
-
-        pass
+        return (self.num_classes, )
 
     def train(self, data: np.ndarray, labels: np.ndarray) -> float:
         '''
@@ -61,12 +60,34 @@ class CnnClassifier(Model):
         Raises ValueError on invalid argument values.
         Raises RuntimeError on other errors.
         '''
+        if not isinstance(data, np.ndarray):
+            raise TypeError("The given data is not ndarray")
+        if not isinstance(labels, np.ndarray):
+            raise TypeError("The given label is not ndarray")
+        if data.shape[0] != labels.shape[0]:
+            raise ValueError("The length of input data and label does not match") 
+        try:
+            self.net.train()
+            self.optimizer.zero_grad()
 
-        # TODO implement
-        # Make sure to set the network to train() mode
-        # See above comments on CPU/GPU
+            # Initialize the inputs and transfer them to gpu if necessary
+            if self.cuda:
+                inputs = torch.from_numpy(data).cuda()
+                labels = torch.from_numpy(labels).cuda()
+            else:
+                inputs = torch.from_numpy(data).cpu()
+                labels = torch.from_numpy(labels).cpu()
 
-        pass
+            outputs = self.net(inputs)
+
+            loss = self.criterion(outputs, labels)
+            loss.backward()
+            self.optimizer.step()
+
+            return float(loss.detach())
+        except:
+            raise RuntimeError("Something went wrong in training")
+
 
     def predict(self, data: np.ndarray) -> np.ndarray:
         '''
@@ -78,11 +99,19 @@ class CnnClassifier(Model):
         Raises RuntimeError on other errors.
         '''
 
-        # TODO implement
+        if not isinstance(data, np.ndarray):
+            raise TypeError("The given data is not ndarray")
+        try:
+            self.net.eval()
+            if self.cuda:
+                inputs = torch.from_numpy(data).cuda()
+            else:
+                inputs = torch.from_numpy(data).cpu()
 
-        # Pass the network's predictions through a nn.Softmax layer to obtain softmax class scores
-        # Make sure to set the network to eval() mode
-        # See above comments on CPU/GPU
+            outputs = self.net(inputs)
 
-        pass
+            outputs = nn.Softmax(dim=1)(outputs)
 
+            return outputs.detach().numpy()
+        except:
+            raise RuntimeError("Something went wrong in training")

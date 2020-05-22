@@ -102,12 +102,10 @@ def rcrop(sz: int, pad: int, pad_mode: str) -> Op:
 
 
     def op(sample:np.ndarray) -> np.ndarray:
-        print(sample.shape)
         if pad > 0:
             sample = np.pad(sample, pad_width=((pad, pad),(pad, pad), (0, 0)), mode=pad_mode)
         if sz > sample.shape[0] or sz > sample.shape[1]:
             raise ValueError()
-        print(sample.shape)
         H = np.random.randint(0, sample.shape[0] - sz)
         W = np.random.randint(0, sample.shape[1] - sz)
         return sample[H:H+sz, W:W+sz, :]

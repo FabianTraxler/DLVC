@@ -63,7 +63,7 @@ class Fn:
             image = np.uint8((self.fn + 1) * 255 / 2)
         else:
             image = self.fn
-
+        
         coloured = cv2.applyColorMap(image, cv2.COLORMAP_JET)
 
         #cv2.imshow("colour window", coloured)
@@ -209,7 +209,7 @@ if __name__ == '__main__':
     sx1 = 50.5
     sx2 = 50.5
     lr = 3000
-    fn = Fn("fn/madsen.png", 1)
+    fn = Fn("fn/eggholder.png", 1)
 
     vis = fn.visualize()
     loc = torch.tensor([sx1, sx2], requires_grad=True)

@@ -70,7 +70,7 @@ class BatchGenerator:
             transformed_data=self.op(item.data)
             data.append(transformed_data)
             label.append(item.label)
-        return Batch(np.array(data),np.array(label),idx)
+        return Batch(np.array(data), np.array(label), idx)
 
 
     def __iter__(self) -> typing.Iterable[Batch]:
