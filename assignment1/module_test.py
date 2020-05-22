@@ -11,8 +11,8 @@ import dlvc.ops as ops
 
 np.random.seed(0)
 
-pets_train = PetsDataset("cifar-10-batches-py/", Subset.TRAINING)
-pets_val = PetsDataset("cifar-10-batches-py/", Subset.VALIDATION)
+pets_train = PetsDataset("../cifar-10-batches-py/", Subset.TRAINING)
+pets_val = PetsDataset("../cifar-10-batches-py/", Subset.VALIDATION)
 
 random_accuracy = Accuracy()
 validation_accuracy = Accuracy()

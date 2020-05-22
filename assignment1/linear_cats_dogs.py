@@ -14,9 +14,9 @@ import dlvc.ops as ops
 TrainedModel = namedtuple('TrainedModel', ['model', 'accuracy'])
 
 
-train_data = PetsDataset("cifar-10-batches-py/", Subset.TRAINING)
-val_data = PetsDataset("cifar-10-batches-py/", Subset.VALIDATION)
-test_data = PetsDataset('cifar-10-batches-py/', Subset.TEST)
+train_data = PetsDataset("../cifar-10-batches-py/", Subset.TRAINING)
+val_data = PetsDataset("../cifar-10-batches-py/", Subset.VALIDATION)
+test_data = PetsDataset('../cifar-10-batches-py/', Subset.TEST)
 
 
 op = ops.chain([

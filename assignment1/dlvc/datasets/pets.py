@@ -123,3 +123,5 @@ class PetsDataset(ClassificationDataset):
         u, _ = np.unique(self.labels, return_inverse=True)
         return(len(u))
         
+    def image_shape(self) -> tuple:
+        return self.__getitem__(0).shape
