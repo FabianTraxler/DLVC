@@ -73,10 +73,10 @@ class CnnClassifier(Model):
             # Initialize the inputs and transfer them to gpu if necessary
             if self.cuda:
                 inputs = torch.from_numpy(data).cuda()
-                labels = torch.from_numpy(labels).cuda()
+                labels = torch.from_numpy(labels).long().cuda()
             else:
                 inputs = torch.from_numpy(data).cpu()
-                labels = torch.from_numpy(labels).cpu()
+                labels = torch.from_numpy(labels).long().cpu()
 
             outputs = self.net(inputs)
 
