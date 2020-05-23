@@ -24,7 +24,7 @@ test_data = PetsDataset(DATA_PATH, Subset.TEST)
 op = ops.chain([
     ops.type_cast(np.float32),
     ops.add(-127.5),
-    ops.mul(1/127.5),
+    ops.mul(1 / 127.5),
     ops.hwc2chw()
 ])
 
@@ -42,14 +42,17 @@ class Net(nn.Module):
         self.relu = nn.ReLU()
 
         # Instantiate two convolutional layers
-        self.conv1 = nn.Conv2d(in_channels=3, out_channels=5, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv2d(in_channels=5, out_channels=10, kernel_size=3, padding=1)
+        self.conv1 = nn.Conv2d(
+            in_channels=3, out_channels=5, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(
+            in_channels=5, out_channels=10, kernel_size=3, padding=1)
 
         # Instantiate a max pooling layer
         self.pool = nn.MaxPool2d(2, 2)
 
         # Instantiate a fully connected layer
-        self.fc = nn.Linear(int(img_size[0] / 2 / 2 * img_size[1] / 2 / 2 * 10), num_classes)
+        self.fc = nn.Linear(
+            int(img_size[0] / 2 / 2 * img_size[1] / 2 / 2 * 10), num_classes)
 
     def forward(self, x):
         # Apply conv followd by relu, then in next line pool
@@ -60,10 +63,11 @@ class Net(nn.Module):
         x = self.relu(self.conv2(x))
         x = self.pool(x)
         # Prepare the image for the fully connected layer
-        x = x.view(-1, int(10 * 32 / 2 /2 * 32 / 2 / 2))
+        x = x.view(-1, int(10 * 32 / 2 / 2 * 32 / 2 / 2))
 
         # Apply the fully connected layer and return the result
         return self.fc(x)
+
 
 img_shape = train_data.image_shape()
 num_classes = train_data.num_classes()
@@ -72,9 +76,11 @@ net = Net(img_shape, num_classes)
 
 clf = CnnClassifier(net, (0, *img_shape), num_classes, 0.01, 0.01)
 
-for epoch in range(100):
+for epoch in range(1):
     losses = []
     for batch in train_batches:
+        print(batch.data)
+        #batch.label = torch.tensor(batch.label, dtype=torch.long)
         loss = clf.train(batch.data, batch.label)
         losses.append(loss)
     losses = np.array(losses)

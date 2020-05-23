@@ -1,3 +1,10 @@
+
+
+################## RUN WITH E.G.: #################
+## python(3) optimizer_2d.py fn/madsen.png 50 50 ##
+###################################################
+
+
 import os
 import time
 from collections import namedtuple
@@ -63,7 +70,7 @@ class Fn:
             image = np.uint8((self.fn + 1) * 255 / 2)
         else:
             image = self.fn
-        
+
         coloured = cv2.applyColorMap(image, cv2.COLORMAP_JET)
 
         #cv2.imshow("colour window", coloured)
@@ -128,7 +135,7 @@ class Fn:
         # TODO implement one of the two versions presented in the lecture
 
         # here we will calculate the gradients, for that we will add eps to x and y
-        # calculate the gradients per dimesnions and return them as a vector / tensor
+        # calculate the gradients per dimesnions and return them as a Vec2 object
 
         x = loc.x1
         y = loc.x2
@@ -162,7 +169,7 @@ class Fn:
         print(grad_x, grad_y)
         print()
 
-        grad = Vec2(10 * grad_y, 10 * grad_x)
+        grad = Vec2(grad_y, grad_x)
 
         return grad
 
@@ -170,7 +177,6 @@ class Fn:
 if __name__ == '__main__':
 
     # remove this comment block to enable the argument parser
-    """
 
     # Parse args
     import argparse
@@ -186,14 +192,11 @@ if __name__ == '__main__':
     parser.add_argument('--eps', type=float, default=1.0,
                         help='Epsilon for computing numeric gradients')
     parser.add_argument('--learning_rate', type=float,
-                        default=10.0, help='Learning rate')
+                        default=30000.0, help='Learning rate')
     parser.add_argument('--beta', type=float, default=0,
                         help='Beta parameter of momentum (0 = no momentum)')
-    parser.add_argument('--nesterov', action='store_true',
+    parser.add_argument('--nesterov', action='store_true', default=False,
                         help='Use Nesterov momentum')
-
-
-
 
     args = parser.parse_args()
 
@@ -203,66 +206,44 @@ if __name__ == '__main__':
     vis = fn.visualize()
     loc = torch.tensor([args.sx1, args.sx2], requires_grad=True)
 
-    """
 
-# Init
-    sx1 = 50.5
-    sx2 = 50.5
+# uncomment this to overwirte the argsparser
+    """
+    # Init
+    sx1 = 150.5
+    sx2 = 750.5
     lr = 3000
-    fn = Fn("fn/eggholder.png", 1)
+    fn = Fn("fn/beale.png", 1)
 
     vis = fn.visualize()
     loc = torch.tensor([sx1, sx2], requires_grad=True)
+    """
 
-    # fn.__call__(loc)
-    # fn.grad(loc)
     optimizer = torch.optim.SGD(
-        [loc], lr=lr, momentum=0, nesterov=False)
+        [loc], lr=args.learning_rate, momentum=args.beta, nesterov=args.nesterov)
 
     # Perform gradient descent using a PyTorch optimizer
     # See https://pytorch.org/docs/stable/optim.html for how to use it
     i = 0
     line_points = []
+    maxEpochs = 100
     while True:
         i += 1
         # Visualize each iteration by drawing on vis using e.g. cv2.line()
         # Find a suitable termination condition and break out of loop once done
         optimizer.zero_grad()
+
+        # we store the loc before and after the optimizer step, this will be used for plotting the trajectory
         start_point = (int(loc[0].item()), int(loc[1].item()))
 
         value = AutogradFn.apply(fn, loc)
 
-        # this block could be helpful if we want to calculate the loss manually
-        # by manually taking the steps based on our gradiant values and comparing
-        # it to the loc values updated by the optimizer
-        # calcualte the expected output:
+        # we get the gradients for loc this will be used as one of our stopping criterions
         grad = fn.grad(Vec2(loc.data[0], loc.data[1]))
         grad_x = grad.x2
         grad_y = grad.x1
 
-        try:
-            # for the first iteration x_calculated and y_calculated do not exist
-            x_calculated += lr * grad_x
-            y_calculated += lr * grad_y
-        except:
-            print("x and y calc not present, using loc")
-            x_calculated = loc.data[0] + lr * grad_x
-            y_calculated = loc.data[1] + lr * grad_y
-
-        # we create our target value
-        target = torch.tensor([x_calculated, y_calculated], requires_grad=True)
-
-        # define loss and calculate it:
-        loss = torch.nn.L1Loss()
-        output = loss(loc, target)
-
-        # here if we want to use the loss, simply change it to output.backward()
-        # output.backward()
         value.backward()
-
-        # some minor logs for the locations losses etc
-        print("locations and should be locs are:", loc.data, target.data)
-        print("loss is :", value.data)
 
         # fineally we do one iteration
         optimizer.step()
@@ -283,7 +264,7 @@ if __name__ == '__main__':
         cv2.waitKey(50)  # 20 fps, tune according to your liking
 
         # break conditions
-        if (i == 100 or (np.abs(grad_x) < 0.0061 and np.abs(grad_y) < 0.0061)):
+        if (i == maxEpochs or (np.abs(grad_x) < 0.0061 and np.abs(grad_y) < 0.00061)):
             print("we reached the iteration limit or stopping criterion")
             time.sleep(10)
             break
