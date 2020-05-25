@@ -11,7 +11,9 @@ import dlvc.ops as ops
 
 DATA_PATH = "../cifar-10-batches-py/"
 RESULTS_FILE = "results.txt"
-NR_EPOCHS = 1
+NR_EPOCHS = 100
+
+CUDA = torch.cuda.is_available()
 
 train_data = PetsDataset(DATA_PATH, Subset.TRAINING)
 val_data = PetsDataset(DATA_PATH, Subset.VALIDATION)
@@ -87,11 +89,14 @@ def train(lr, wd, operation):
     print("Augmentation = {}".format(operation))
     print("Learning Rate = {}".format(lr))
 
+    device = torch.device("cuda" if CUDA else "cpu")
+
     img_shape = train_data.image_shape()
     num_classes = train_data.num_classes()
 
-    net = Net(img_shape, num_classes)
+    net = Net(img_shape, num_classes).to(device)
     clf = CnnClassifier(net, (0, *img_shape), num_classes, lr, wd)
+
     op = operations[operation]
     train_batches = BatchGenerator(train_data, 128, False, op)
     val_batches = BatchGenerator(val_data, 128, False, op)
@@ -148,6 +153,8 @@ def train(lr, wd, operation):
 if __name__ == "__main__":
     with open(RESULTS_FILE, "w") as file:
         file.write("Training with different Parameters:\n")
+    
+    print("Using Cuda: {}".format(CUDA))
         
     train(lr=0.01, wd=0.01, operation="with_data_augmentation")
     train(lr=0.01, wd=0, operation="with_data_augmentation")
