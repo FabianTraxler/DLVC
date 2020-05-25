@@ -1,10 +1,6 @@
-from collections import namedtuple
 import numpy as np
-
 import torch
 import torch.nn as nn
-
-import time
 
 from dlvc.models.pytorch import CnnClassifier
 from dlvc.batches import BatchGenerator
@@ -13,24 +9,23 @@ from dlvc.datasets.pets import PetsDataset
 from dlvc.dataset import Subset
 import dlvc.ops as ops
 
-TrainedModel = namedtuple('TrainedModel', ['model', 'accuracy'])
-
 DATA_PATH = "../cifar-10-batches-py/"
+MODEL_PATH = "best_model.pt"
 train_data = PetsDataset(DATA_PATH, Subset.TRAINING)
 val_data = PetsDataset(DATA_PATH, Subset.VALIDATION)
-test_data = PetsDataset(DATA_PATH, Subset.TEST)
-
 
 op = ops.chain([
     ops.type_cast(np.float32),
     ops.add(-127.5),
     ops.mul(1 / 127.5),
+    ops.hflip(),
+    ops.rcrop(32, 4, 'constant'),
+    ops.add_noise(),
     ops.hwc2chw()
 ])
 
 train_batches = BatchGenerator(train_data, 128, False, op)
 val_batches = BatchGenerator(val_data, 128, False, op)
-test_batches = BatchGenerator(test_data, 128, False, op)
 
 
 class Net(nn.Module):
@@ -81,8 +76,11 @@ img_shape = train_data.image_shape()
 num_classes = train_data.num_classes()
 
 net = Net(img_shape, num_classes)
+clf = CnnClassifier(net, (0, *img_shape), num_classes, 0.01, 0.01)
 
-clf = CnnClassifier(net, (0, *img_shape), num_classes, 0.01, 0)
+not_improved_since = 0
+best_accuracy = 0
+stop_epoch = 0
 
 for epoch in range(100):
     losses = []
@@ -94,9 +92,20 @@ for epoch in range(100):
     std = round(np.std(losses), 3)
     print("epoch {}".format(epoch))
     print("  train loss: {} +- {}".format(mean, std))
+
     accuracy = Accuracy()
     for batch in val_batches:
         predictions = clf.predict(batch.data)
         accuracy.update(predictions, batch.label)
     acc = round(accuracy.accuracy(), 3)
+    # Early stopping
+    if acc > best_accuracy:
+        stop_epoch = epoch
+        torch.save(net.state_dict(), MODEL_PATH)
+        not_improved_since = 0
+    else:
+        not_improved_since += 1
+    if not_improved_since > 5: # if not improved since 5 epochs stop training
+        break
     print("  val acc: accuracy: {}".format(acc))
+print("Best model on epoch {}".format(stop_epoch))

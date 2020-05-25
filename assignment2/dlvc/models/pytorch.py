@@ -1,8 +1,8 @@
-from ..model import Model
-
 import numpy as np
 import torch
 import torch.nn as nn
+
+from ..model import Model
 
 class CnnClassifier(Model):
     '''
@@ -23,8 +23,6 @@ class CnnClassifier(Model):
         wd: weight decay to use for training.
         '''
 
-        # TODO implement
-
         self.net = net
 
         self.input_shape = input_shape
@@ -32,7 +30,12 @@ class CnnClassifier(Model):
 
         self.cuda = next(net.parameters()).is_cuda
 
-        self.optimizer = torch.optim.SGD(net.parameters(), lr=lr, weight_decay=wd, nesterov=True, momentum=0.9)
+        self.optimizer = torch.optim.SGD(
+            net.parameters(), 
+            lr=lr, 
+            weight_decay=wd, 
+            nesterov=True, 
+            momentum=0.9)
         self.criterion = nn.CrossEntropyLoss()
 
 

@@ -112,3 +112,24 @@ def rcrop(sz: int, pad: int, pad_mode: str) -> Op:
          
 
     return op
+
+
+def add_noise() -> Op:
+    '''
+    Add random noise to the picture with a probobilty of 0.5.
+    This could be helpful to add some randomness to the data to avoid overfitting.
+    '''
+
+    def op(sample: np.ndarray) -> np.ndarray:
+        if np.random.rand() < 0.5:
+            noise = np.random.normal(0, 0.05, sample.shape)
+            overflow_upper = sample+noise >= 1
+            overflow_lower = sample+noise < 0
+            noise[overflow_upper] = 1.0
+            noise[overflow_lower] = 0.0
+            noisy = sample + noise
+            return noisy.astype(np.float32)
+        else:
+            return sample
+
+    return op
