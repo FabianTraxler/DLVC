@@ -6,3 +6,4 @@ __pycache__
 *.pyc
 .vscode/
 *.code-workspace
+lib64
