@@ -9,9 +9,13 @@ from dlvc.datasets.pets import PetsDataset
 from dlvc.dataset import Subset
 import dlvc.ops as ops
 
+np.random.seed(0)
+torch.manual_seed(0)
+
 DATA_PATH = "../cifar-10-batches-py/"
 RESULTS_FILE = "results.txt"
 NR_EPOCHS = 100
+EARLY_STOPPING = 10
 
 CUDA = torch.cuda.is_available()
 
@@ -28,6 +32,15 @@ op_all_augmentation = ops.chain([
     ops.hwc2chw()
 ])
 
+op_augmentation_crop_flip = ops.chain([
+    ops.type_cast(np.float32),
+    ops.add(-127.5),
+    ops.mul(1 / 127.5),
+    ops.hflip(),
+    ops.rcrop(32, 4, 'constant'),
+    ops.hwc2chw()
+])
+
 op_no_augmentation = ops.chain([
     ops.type_cast(np.float32),
     ops.add(-127.5),
@@ -36,8 +49,9 @@ op_no_augmentation = ops.chain([
 ])
 
 operations = {
-    "with_data_augmentation": op_all_augmentation,
-    "withoud_data_augmentation": op_no_augmentation
+    "with_data_augmentation_all": op_all_augmentation,
+    "with_data_augmentation_crop_flip": op_augmentation_crop_flip,
+    "without_data_augmentation": op_no_augmentation
 }
 
 class Net(nn.Module):
@@ -129,7 +143,7 @@ def train(lr, wd, operation):
             best_loss = mean
         else:
             not_improved_since += 1
-        if not_improved_since > 5: # if not improved since 5 epochs stop training
+        if not_improved_since > EARLY_STOPPING: # if not improved since 5 epochs stop training
             break
     print()
     print("Best val accuracy after epoch {}".format(stop_epoch + 1))
@@ -155,16 +169,24 @@ if __name__ == "__main__":
         file.write("Training with different Parameters:\n")
     
     print("Using Cuda: {}".format(CUDA))
-        
-    train(lr=0.01, wd=0.01, operation="with_data_augmentation")
-    train(lr=0.01, wd=0, operation="with_data_augmentation")
-    train(lr=0.001, wd=0.01, operation="with_data_augmentation")
-    train(lr=0.1, wd=0.01, operation="with_data_augmentation")
-    train(lr=0.01, wd=0.001, operation="with_data_augmentation")
-    train(lr=0.01, wd=0.001, operation="with_data_augmentation")
-    train(lr=0.01, wd=0.01, operation="withoud_data_augmentation")
-    train(lr=0.01, wd=0, operation="withoud_data_augmentation")
-    train(lr=0.001, wd=0.01, operation="withoud_data_augmentation")
-    train(lr=0.1, wd=0.01, operation="withoud_data_augmentation")
-    train(lr=0.01, wd=0.001, operation="withoud_data_augmentation")
-    train(lr=0.01, wd=0.001, operation="withoud_data_augmentation")
+
+    train(lr=0.01, wd=0, operation="with_data_augmentation_all")
+    train(lr=0.01, wd=0.01, operation="with_data_augmentation_all")
+    train(lr=0.01, wd=0.001, operation="with_data_augmentation_all")
+    train(lr=0.01, wd=0.00001, operation="with_data_augmentation_all")
+
+    train(lr=0.01, wd=0, operation="without_data_augmentation")
+    train(lr=0.01, wd=0.01, operation="without_data_augmentation")
+    train(lr=0.01, wd=0.001, operation="without_data_augmentation")
+    train(lr=0.01, wd=0.00001, operation="without_data_augmentation")
+
+    train(lr=0.01, wd=0, operation="with_data_augmentation_crop_flip")
+    train(lr=0.01, wd=0.01, operation="with_data_augmentation_crop_flip")
+    train(lr=0.01, wd=0.001, operation="with_data_augmentation_crop_flip")
+    train(lr=0.01, wd=0.00001, operation="with_data_augmentation_crop_flip")
+
+    train(lr=0.0001, wd=0, operation="with_data_augmentation_all")
+    train(lr=0.0001, wd=0.01, operation="with_data_augmentation_all")
+    train(lr=0.0001, wd=0.001, operation="with_data_augmentation_all")
+    train(lr=0.0001, wd=0.00001, operation="with_data_augmentation_all")
+    

@@ -1,1 +1,161 @@
 Training with different Parameters:
+Trained a network with:
+Weight Decay = 0
+Augmentation = with_data_augmentation_all
+Learning Rate = 0.01
+---
+Best val accuracy after epoch 93
+Validation Accuracy: 0.852
+Train Loss: 0.224
+
+#################################
+Trained a network with:
+Weight Decay = 0.01
+Augmentation = with_data_augmentation_all
+Learning Rate = 0.01
+---
+Best val accuracy after epoch 83
+Validation Accuracy: 0.762
+Train Loss: 0.483
+
+#################################
+Trained a network with:
+Weight Decay = 0.001
+Augmentation = with_data_augmentation_all
+Learning Rate = 0.01
+---
+Best val accuracy after epoch 75
+Validation Accuracy: 0.832
+Train Loss: 0.302
+
+#################################
+Trained a network with:
+Weight Decay = 1e-05
+Augmentation = with_data_augmentation_all
+Learning Rate = 0.01
+---
+Best val accuracy after epoch 78
+Validation Accuracy: 0.846
+Train Loss: 0.27
+
+#################################
+Trained a network with:
+Weight Decay = 0
+Augmentation = without_data_augmentation
+Learning Rate = 0.01
+---
+Best val accuracy after epoch 25
+Validation Accuracy: 0.751
+Train Loss: 0.335
+
+#################################
+Trained a network with:
+Weight Decay = 0.01
+Augmentation = without_data_augmentation
+Learning Rate = 0.01
+---
+Best val accuracy after epoch 77
+Validation Accuracy: 0.775
+Train Loss: 0.408
+
+#################################
+Trained a network with:
+Weight Decay = 0.001
+Augmentation = without_data_augmentation
+Learning Rate = 0.01
+---
+Best val accuracy after epoch 28
+Validation Accuracy: 0.755
+Train Loss: 0.336
+
+#################################
+Trained a network with:
+Weight Decay = 1e-05
+Augmentation = without_data_augmentation
+Learning Rate = 0.01
+---
+Best val accuracy after epoch 23
+Validation Accuracy: 0.751
+Train Loss: 0.353
+
+#################################
+Trained a network with:
+Weight Decay = 0
+Augmentation = with_data_augmentation_crop_flip
+Learning Rate = 0.01
+---
+Best val accuracy after epoch 53
+Validation Accuracy: 0.828
+Train Loss: 0.336
+
+#################################
+Trained a network with:
+Weight Decay = 0.01
+Augmentation = with_data_augmentation_crop_flip
+Learning Rate = 0.01
+---
+Best val accuracy after epoch 67
+Validation Accuracy: 0.761
+Train Loss: 0.505
+
+#################################
+Trained a network with:
+Weight Decay = 0.001
+Augmentation = with_data_augmentation_crop_flip
+Learning Rate = 0.01
+---
+Best val accuracy after epoch 66
+Validation Accuracy: 0.828
+Train Loss: 0.333
+
+#################################
+Trained a network with:
+Weight Decay = 1e-05
+Augmentation = with_data_augmentation_crop_flip
+Learning Rate = 0.01
+---
+Best val accuracy after epoch 76
+Validation Accuracy: 0.847
+Train Loss: 0.276
+
+#################################
+Trained a network with:
+Weight Decay = 0
+Augmentation = with_data_augmentation_all
+Learning Rate = 0.0001
+---
+Best val accuracy after epoch 34
+Validation Accuracy: 0.583
+Train Loss: 0.691
+
+#################################
+Trained a network with:
+Weight Decay = 0.01
+Augmentation = with_data_augmentation_all
+Learning Rate = 0.0001
+---
+Best val accuracy after epoch 29
+Validation Accuracy: 0.604
+Train Loss: 0.689
+
+#################################
+Trained a network with:
+Weight Decay = 0.001
+Augmentation = with_data_augmentation_all
+Learning Rate = 0.0001
+---
+Best val accuracy after epoch 9
+Validation Accuracy: 0.526
+Train Loss: 0.693
+
+#################################
+Trained a network with:
+Weight Decay = 1e-05
+Augmentation = with_data_augmentation_all
+Learning Rate = 0.0001
+---
+Best val accuracy after epoch 14
+Validation Accuracy: 0.509
+Train Loss: 0.693
+
+#################################

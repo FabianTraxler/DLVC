@@ -9,6 +9,9 @@ from dlvc.datasets.pets import PetsDataset
 from dlvc.dataset import Subset
 import dlvc.ops as ops
 
+np.random.seed(0)
+torch.manual_seed(0)
+
 DATA_PATH = "../cifar-10-batches-py/"
 MODEL_PATH = "best_model.pt"
 train_data = PetsDataset(DATA_PATH, Subset.TRAINING)

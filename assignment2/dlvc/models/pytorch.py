@@ -115,6 +115,6 @@ class CnnClassifier(Model):
 
             outputs = nn.Softmax(dim=1)(outputs)
 
-            return outputs.detach().numpy()
+            return outputs.cpu().detach().numpy()
         except:
             raise RuntimeError("Something went wrong in training")

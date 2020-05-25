@@ -13,6 +13,9 @@ from dlvc.datasets.pets import PetsDataset
 from dlvc.dataset import Subset
 import dlvc.ops as ops
 
+np.random.seed(0)
+torch.manual_seed(0)
+
 TrainedModel = namedtuple('TrainedModel', ['model', 'accuracy'])
 
 DATA_PATH = "../cifar-10-batches-py/"
